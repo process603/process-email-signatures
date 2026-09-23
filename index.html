@@ -83,7 +83,7 @@ function mapsHref(address){
 
 function signatureHtml(person){
   const credentials = String(person.credentials || '').trim();
-  const credentialHtml = credentials ? `, <span style="font-size:13px;">${esc(credentials)}</span>` : '';
+  const credentialHtml = credentials ? `, <span style="font-size:11px;">${esc(credentials)}</span>` : '';
   const website = settings.main_website || 'https://www.theprocessrecoverycenter.com/';
   const websiteDisplay = website.replace(/^https?:\/\//,'').replace(/\/$/,'');
   const location = person.location || settings.main_address || '21 Factory St, Nashua, NH 03060';
@@ -91,13 +91,13 @@ function signatureHtml(person){
   const mapLink = mapsHref(location);
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:385px;max-width:385px;font-family:Arial,Helvetica,sans-serif;color:#26343d;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:410px;max-width:410px;font-family:Arial,Helvetica,sans-serif;color:#26343d;">
 <tr>
-<td width="110" valign="middle" style="width:110px;padding:3px 9px 3px 0;text-align:center;border-right:1px solid #75a6c4;">
-<a href="${esc(website)}" style="text-decoration:none;"><img src="${PROCESS_LOGO}" width="106" alt="The Process Recovery Center" style="display:block;width:106px;height:auto;border:0;margin:0 auto;"></a>
+<td width="112" valign="middle" style="width:112px;padding:3px 9px 3px 0;text-align:center;border-right:1px solid #75a6c4;">
+<a href="${esc(website)}" style="text-decoration:none;"><img src="${PROCESS_LOGO}" width="108" alt="The Process Recovery Center" style="display:block;width:108px;height:auto;border:0;margin:0 auto;"></a>
 </td>
 <td valign="top" style="padding:1px 0 1px 11px;">
-<div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:19px;font-weight:bold;font-style:italic;color:#1f2930;">${esc(person.name)}${credentialHtml}</div>
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:19px;font-weight:bold;font-style:italic;color:#1f2930;white-space:nowrap;">${esc(person.name)}${credentialHtml}</div>
 <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:15px;font-weight:600;color:#39779f;margin-top:1px;">${esc(person.title || '')}</div>
 <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:13px;font-weight:bold;color:#59666e;letter-spacing:.4px;margin-top:1px;">THE PROCESS RECOVERY CENTER</div>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:5px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;"><tr>
