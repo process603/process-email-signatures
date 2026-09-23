@@ -83,7 +83,7 @@ function mapsHref(address){
 
 function signatureHtml(person){
   const credentials = String(person.credentials || '').trim();
-  const credentialHtml = credentials ? `, <span style="font-size:12px;">${esc(credentials)}</span>` : '';
+  const credentialHtml = credentials ? `, <span style="font-size:12.5px;">${esc(credentials)}</span>` : '';
   const website = settings.main_website || 'https://www.theprocessrecoverycenter.com/';
   const websiteDisplay = website.replace(/^https?:\/\//,'').replace(/\/$/,'');
   const location = person.location || settings.main_address || '21 Factory St, Nashua, NH 03060';
@@ -98,19 +98,19 @@ function signatureHtml(person){
 </td>
 <td valign="top" style="padding:1px 0 1px 11px;">
 <div style="font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:18px;font-weight:bold;font-style:italic;color:#1f2930;">${esc(person.name)}${credentialHtml}</div>
-<div style="font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:14px;font-weight:600;color:#39779f;margin-top:1px;">${esc(person.title || '')}</div>
-<div style="font-family:Arial,Helvetica,sans-serif;font-size:8.5px;line-height:12px;font-weight:bold;color:#59666e;letter-spacing:.45px;margin-top:1px;">THE PROCESS RECOVERY CENTER</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:15px;font-weight:600;color:#39779f;margin-top:1px;">${esc(person.title || '')}</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:9.5px;line-height:13px;font-weight:bold;color:#59666e;letter-spacing:.4px;margin-top:1px;">THE PROCESS RECOVERY CENTER</div>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:5px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;"><tr>
-<td style="font-size:9px;line-height:13px;font-weight:bold;color:#39779f;padding-right:4px;">P</td>
-<td style="font-size:9px;line-height:13px;padding-right:9px;"><a href="${esc(phoneHref)}" style="color:#26343d;text-decoration:none;">${esc(person.phone || '')}</a></td>
-<td style="font-size:9px;line-height:13px;font-weight:bold;color:#39779f;padding-right:4px;">F</td>
-<td style="font-size:9px;line-height:13px;color:#26343d;">${FAX_DISPLAY}</td>
+<td style="font-size:10px;line-height:14px;font-weight:bold;color:#39779f;padding-right:4px;">P</td>
+<td style="font-size:10px;line-height:14px;padding-right:9px;"><a href="${esc(phoneHref)}" style="color:#26343d;text-decoration:none;">${esc(person.phone || '')}</a></td>
+<td style="font-size:10px;line-height:14px;font-weight:bold;color:#39779f;padding-right:4px;">F</td>
+<td style="font-size:10px;line-height:14px;color:#26343d;">${FAX_DISPLAY}</td>
 </tr></table>
-<div style="font-size:9px;line-height:13px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">E</span>&nbsp; <a href="mailto:${esc(person.email || '')}" style="color:#26343d;text-decoration:none;">${esc(person.email || '')}</a></div>
-<div style="font-size:9px;line-height:13px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">W</span>&nbsp; <a href="${esc(website)}" style="color:#39779f;text-decoration:none;">${esc(websiteDisplay)}</a></div>
-<div style="font-size:9px;line-height:13px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">A</span>&nbsp; <a href="${esc(mapLink)}" style="color:#26343d;text-decoration:none;">${esc(location)}</a></div>
+<div style="font-size:10px;line-height:14px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">E</span>&nbsp; <a href="mailto:${esc(person.email || '')}" style="color:#26343d;text-decoration:none;">${esc(person.email || '')}</a></div>
+<div style="font-size:10px;line-height:14px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">W</span>&nbsp; <a href="${esc(website)}" style="color:#39779f;text-decoration:none;">${esc(websiteDisplay)}</a></div>
+<div style="font-size:10px;line-height:14px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">A</span>&nbsp; <a href="${esc(mapLink)}" style="color:#26343d;text-decoration:none;">${esc(location)}</a></div>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:5px;border-top:1px solid #cddce5;width:auto;"><tr>
-<td style="padding-top:5px;font-family:Georgia,'Times New Roman',serif;font-size:7.5px;font-style:italic;line-height:10px;color:#69767e;vertical-align:middle;white-space:nowrap;">A proud affiliate of</td>
+<td style="padding-top:5px;font-family:Georgia,'Times New Roman',serif;font-size:8px;font-style:italic;line-height:11px;color:#69767e;vertical-align:middle;white-space:nowrap;">A proud affiliate of</td>
 <td style="padding-top:4px;padding-left:2px;vertical-align:middle;"><img src="${KING_LOGO}" width="88" alt="King Healthcare Group" style="display:block;width:88px;height:auto;border:0;"></td>
 </tr></table>
 </td>
