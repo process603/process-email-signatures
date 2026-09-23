@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Process Email Signature</title>
+<style>
+body{margin:0;background:#f5f7f9;font-family:Arial,Helvetica,sans-serif;color:#24313a}.page{max-width:760px;margin:40px auto;padding:0 20px}.card{background:#fff;border:1px solid #dfe6ea;border-radius:12px;padding:28px;box-shadow:0 4px 18px rgba(20,40,55,.06)}h1{font-size:20px;margin:0 0 6px}.help{font-size:13px;color:#66737c;margin:0 0 24px}.preview{padding:20px;border:1px solid #e4eaee;border-radius:8px;background:#fff;overflow:auto}.actions{margin-top:18px}.copy{border:0;border-radius:7px;background:#2f709e;color:#fff;font-weight:700;font-size:14px;padding:11px 18px;cursor:pointer}.status{font-size:12px;color:#5e6b73;margin-left:10px}
+</style>
+</head>
+<body>
+<div class="page"><div class="card">
+<h1>Process Email Signature</h1>
+<p class="help">Preview Kevin's signature below. Click Copy Signature, then paste directly into Gmail Settings → General → Signature.</p>
+<div class="preview">
+<div id="signature">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:420px;max-width:420px;font-family:Arial,Helvetica,sans-serif;color:#26343d;">
+<tr>
+<td width="118" valign="middle" style="width:118px;padding:6px 13px 6px 0;text-align:center;border-right:2px solid #4f89ad;">
+<a href="https://www.theprocessrecoverycenter.com/" style="text-decoration:none;"><img src="https://raw.githubusercontent.com/process603/process-email-signatures/main/process-logo.png" width="104" alt="The Process Recovery Center" style="display:block;width:104px;height:auto;border:0;margin:0 auto;"></a>
+</td>
+<td valign="top" style="padding:3px 0 3px 14px;">
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:19px;font-weight:bold;color:#26343d;white-space:nowrap;">Kevin O’Laughlin, CRSW, RYT-200</div>
+<div style="font-size:11px;line-height:15px;color:#58666f;margin-top:2px;">Operations &amp; Technology Coordinator</div>
+<div style="font-size:10px;line-height:14px;font-weight:bold;color:#39779f;letter-spacing:.2px;margin-top:2px;">THE PROCESS RECOVERY CENTER</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:7px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;"><tr>
+<td style="font-size:10px;line-height:14px;font-weight:bold;color:#39779f;padding-right:5px;">P</td><td style="font-size:10px;line-height:14px;padding-right:12px;"><a href="tel:+16179997885" style="color:#26343d;text-decoration:none;">617-999-7885</a></td>
+<td style="font-size:10px;line-height:14px;font-weight:bold;color:#39779f;padding-right:5px;">F</td><td style="font-size:10px;line-height:14px;color:#26343d;">603-386-6404</td>
+</tr></table>
+<div style="font-size:10px;line-height:14px;margin-top:2px;"><span style="font-weight:bold;color:#39779f;">E</span>&nbsp; <a href="mailto:kevino@theprocessrecoverycenter.com" style="color:#26343d;text-decoration:none;">kevino@theprocessrecoverycenter.com</a></div>
+<div style="font-size:10px;line-height:14px;margin-top:2px;"><span style="font-weight:bold;color:#39779f;">W</span>&nbsp; <a href="https://www.theprocessrecoverycenter.com/" style="color:#39779f;text-decoration:none;">theprocessrecoverycenter.com</a></div>
+<div style="font-size:10px;line-height:14px;margin-top:2px;"><span style="font-weight:bold;color:#39779f;">A</span>&nbsp; <a href="https://www.google.com/maps/search/?api=1&amp;query=21+Factory+St+Nashua+NH+03060" style="color:#26343d;text-decoration:none;">21 Factory St, Nashua, NH 03060</a></div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:6px;border-top:1px solid #dce5ea;width:100%;"><tr>
+<td style="padding-top:5px;font-size:8px;line-height:11px;color:#69767e;vertical-align:middle;white-space:nowrap;">A member of</td>
+<td style="padding-top:5px;padding-left:7px;vertical-align:middle;"><img src="https://raw.githubusercontent.com/process603/process-email-signatures/main/king-logo.png" width="94" alt="King Healthcare Group" style="display:block;width:94px;height:auto;border:0;"></td>
+</tr></table>
+</td></tr></table>
+</div></div>
+<div class="actions"><button class="copy" onclick="copySignature()">Copy Signature</button><span id="status" class="status"></span></div>
+</div></div>
+<script>
+async function copySignature(){
+ const sig=document.getElementById('signature'); const status=document.getElementById('status');
+ try{const blob=new Blob([sig.innerHTML],{type:'text/html'}); const text=new Blob([sig.innerText],{type:'text/plain'}); await navigator.clipboard.write([new ClipboardItem({'text/html':blob,'text/plain':text})]); status.textContent='Copied — paste into Gmail.';}
+ catch(e){const r=document.createRange();r.selectNodeContents(sig);const s=window.getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();status.textContent='Copied — paste into Gmail.';}
+}
+</script>
+</body></html>
