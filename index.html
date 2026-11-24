@@ -35,6 +35,7 @@
   .field.wide{grid-column:1 / -1}
   label{font-size:12px;font-weight:700;color:var(--label)}
   label .opt{font-weight:400;color:var(--muted)}
+  .fieldHint{font-size:11px;color:var(--muted);line-height:1.35}
   select,input{height:40px;width:100%;border:1px solid var(--line-2);border-radius:7px;background:var(--card);
     color:var(--text);padding:0 10px;font-size:14px;outline:none;font-family:inherit}
   select:focus,input:focus,.email:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)}
@@ -50,6 +51,8 @@
   .logoRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
   .logoRow .lbl{font-size:12px;font-weight:700;color:var(--label)}
   .logoRow .note{font-size:12px;color:var(--muted)}
+  .check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;color:var(--text);margin:0 0 10px;cursor:pointer}
+  .check input{width:16px;height:16px;margin:0;flex:none}
   .callout{background:var(--soft);border-left:4px solid var(--accent);border-radius:6px;padding:11px 13px;font-size:13px;line-height:1.5;margin:0 0 10px}
   /* The preview stays white on purpose: it shows the signature the way most email shows it. */
   .preview{padding:18px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#26343d;overflow:auto;min-height:150px}
@@ -108,8 +111,9 @@
           <input id="fTitle" type="text" autocomplete="organization-title" maxlength="70" placeholder="Recovery Support Worker">
         </div>
         <div class="field">
-          <label for="fPhone">Work phone</label>
-          <input id="fPhone" type="tel" inputmode="tel" maxlength="24" placeholder="603-555-0123">
+          <label for="fPhone">Phone <span class="opt">(optional)</span></label>
+          <input id="fPhone" type="tel" inputmode="tel" maxlength="24" placeholder="Your number">
+          <span class="fieldHint">Leave blank to use the main line, 603-704-3620.</span>
         </div>
         <div class="field">
           <label for="fCell">Cell <span class="opt">(optional)</span></label>
@@ -139,6 +143,7 @@
       </span>
       <span id="spinNote" class="note" hidden>The arrows turn slowly. Some older Outlook versions show it still.</span>
     </div>
+    <label class="check"><input id="showFax" type="checkbox" checked onchange="setFax(this.checked)"> Show fax number</label>
     <div class="preview">
       <div id="signature"></div>
       <div id="error" class="error" hidden></div>
@@ -207,6 +212,7 @@ const KING_LOGO = 'https://raw.githubusercontent.com/process603/process-email-si
 const PROCESS_LOGO_SPIN = 'https://raw.githubusercontent.com/process603/process-email-signatures/main/process-logo-spin.gif';
 const FAX_DISPLAY = '603-386-6404';
 const EMAIL_DOMAIN = 'theprocessrecoverycenter.com';
+const MAIN_LINE = '603-704-3620';   // CTM main line, used when someone leaves the phone blank
 const CUSTOM_ADDRESS = '21 Factory Street, Nashua NH 03060';
 const ARIAL = 'font-family:Arial,Helvetica,sans-serif;';
 
@@ -216,6 +222,7 @@ let mode = 'list';
 let listPerson = null;
 let listFailed = false;
 let spinLogo = false;
+let showFax = true;
 let currentPerson = null;
 
 function esc(value){
@@ -266,8 +273,8 @@ function signatureHtml(person){
   const faxTd = `<td style="${ARIAL}font-size:11px;line-height:15px;color:#26343d;">${FAX_DISPLAY}</td>`;
   const cellTd = `<td style="${ARIAL}font-size:11px;line-height:15px;"><a href="${esc(telHref(cell))}" style="color:#26343d;text-decoration:none;">${esc(cell)}</a></td>`;
   // With a cell number the row is Phone + Cell and fax drops to its own line, so nothing wraps.
-  const phoneRow = cell ? labelTd('P')+phoneTd+labelTd('C')+cellTd : labelTd('P')+phoneTd+labelTd('F')+faxTd;
-  const faxLine = cell ? `
+  const phoneRow = cell ? labelTd('P')+phoneTd+labelTd('C')+cellTd : (showFax ? labelTd('P')+phoneTd+labelTd('F')+faxTd : labelTd('P')+phoneTd);
+  const faxLine = (cell && showFax) ? `
 <div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">F</span>&nbsp; ${FAX_DISPLAY}</div>` : '';
 
   return `
@@ -334,6 +341,13 @@ function render(person){
   setStatus('');
 }
 
+function setFax(on){
+  showFax = !!on;
+  if(!currentPerson) return;
+  // Redraw the card only; copy buttons and messages stay as they are.
+  document.getElementById('signature').innerHTML = signatureHtml(currentPerson);
+}
+
 function setSpin(on){
   spinLogo = !!on;
   document.getElementById('logoSpin').setAttribute('aria-pressed', String(spinLogo));
@@ -366,7 +380,7 @@ function customPerson(){
     name: val('fName'),
     credentials: val('fCred').replace(/^,\s*/,''),
     title: val('fTitle'),
-    phone: formatPhone(val('fPhone')),
+    phone: formatPhone(val('fPhone')) || MAIN_LINE,
     cell: formatPhone(val('fCell')),
     pronouns: val('fPronouns').replace(/^\(|\)$/g,''),
     email: local ? local+'@'+EMAIL_DOMAIN : '',
@@ -378,7 +392,7 @@ function customMissing(p){
   const missing=[];
   if(!p.name) missing.push('full name');
   if(!p.title) missing.push('job title');
-  if(p.phone.replace(/\D/g,'').length<10) missing.push('work phone');
+  if(p.phone.replace(/\D/g,'').length<10) missing.push('a full phone number (or leave it blank)');
   if(!p.email) missing.push('work email');
   if(p.cell && p.cell.replace(/\D/g,'').length<10) missing.push('a full cell number (or leave it blank)');
   return missing;
@@ -387,12 +401,11 @@ function customMissing(p){
 function renderCustom(){
   const p=customPerson();
   const missing=customMissing(p);
-  const untouched=!p.name && !p.title && !val('fPhone') && !p.email;
+  const untouched=!p.name && !p.title && !p.email;
   // Show placeholders in the preview so people can see the layout before they finish typing.
   const shown=Object.assign({},p,{
     name: p.name || 'Your Name',
     title: p.title || 'Your job title',
-    phone: p.phone || '603-555-0123',
     email: p.email || 'you@'+EMAIL_DOMAIN
   });
   draw(shown, missing.length===0);
