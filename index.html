@@ -131,7 +131,7 @@
 
     <div class="previewLabel">1. Full signature</div>
     <p class="previewHint">For new emails.</p>
-    <div class="logoRow">
+    <div class="logoRow" id="logoRow" hidden>
       <span class="lbl">Logo</span>
       <span class="seg">
         <button id="logoStill" type="button" aria-pressed="true" onclick="setSpin(false)">Still</button>
@@ -492,6 +492,9 @@ function toggleTheme(){
   const system=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   applyTheme(saved==='dark'||saved==='light' ? saved : system);
 })();
+
+// The spinning logo is not offered to staff. The switch only appears when the address ends in ?spin=1.
+if(new URLSearchParams(window.location.search).get('spin')==='1') document.getElementById('logoRow').hidden=false;
 
 CUSTOM_FIELDS.forEach(id=>document.getElementById(id).addEventListener('input',renderCustom));
 loadStaff();
