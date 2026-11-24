@@ -3,49 +3,199 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Process Email Signature Generator</title>
 <style>
+  :root{
+    --bg:#f5f7f9;--card:#fff;--line:#dfe6ea;--line-2:#cfd9df;--text:#24313a;--muted:#66737c;
+    --label:#4c5961;--accent:#2f709e;--accent-text:#fff;--soft:#eef4f8;--focus:rgba(75,137,173,.18);
+    --error:#9b2c2c;--ok:#1f6b45;--shadow:0 4px 18px rgba(20,40,55,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1f33;--card:#16293f;--line:#27405c;--line-2:#34506f;--text:#e6eef6;--muted:#9fb3c6;
+    --label:#b9cada;--accent:#4f9bcc;--accent-text:#08182a;--soft:#1d3450;--focus:rgba(110,175,220,.28);
+    --error:#ff9d9d;--ok:#7fd6a8;--shadow:0 4px 18px rgba(0,0,0,.3);
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:#f5f7f9;font-family:Arial,Helvetica,sans-serif;color:#24313a}
+  body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text)}
   .page{max-width:720px;margin:40px auto;padding:0 20px}
-  .card{background:#fff;border:1px solid #dfe6ea;border-radius:12px;padding:28px;box-shadow:0 4px 18px rgba(20,40,55,.06)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;box-shadow:var(--shadow)}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
   h1{font-size:20px;margin:0 0 6px}
-  .help{font-size:13px;color:#66737c;margin:0 0 18px;line-height:1.5}
-  .controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:18px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:260px}
-  label{font-size:12px;font-weight:700;color:#4c5961}
-  select{height:40px;border:1px solid #cfd9df;border-radius:7px;background:#fff;color:#24313a;padding:0 10px;font-size:14px;outline:none}
-  select:focus{border-color:#6ba1c2;box-shadow:0 0 0 3px rgba(75,137,173,.12)}
-  .preview{padding:18px;border:1px solid #e4eaee;border-radius:8px;background:#fff;overflow:auto;min-height:150px}
-  .actions{margin-top:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .copy{border:0;border-radius:7px;background:#2f709e;color:#fff;font-weight:700;font-size:14px;padding:11px 18px;cursor:pointer}
+  .help{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+  .theme{flex:none;border:1px solid var(--line-2);background:var(--card);color:var(--text);border-radius:7px;
+    font-size:12px;font-weight:700;padding:7px 10px;cursor:pointer}
+  .tabs{display:flex;gap:6px;background:var(--soft);border-radius:9px;padding:4px;margin-bottom:18px}
+  .tab{flex:1;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:10px 8px;
+    border-radius:7px;cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(20,40,55,.15)}
+  .controls{margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .field.wide{grid-column:1 / -1}
+  label{font-size:12px;font-weight:700;color:var(--label)}
+  label .opt{font-weight:400;color:var(--muted)}
+  select,input{height:40px;width:100%;border:1px solid var(--line-2);border-radius:7px;background:var(--card);
+    color:var(--text);padding:0 10px;font-size:14px;outline:none;font-family:inherit}
+  select:focus,input:focus,.email:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)}
+  .email{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:7px;background:var(--card);overflow:hidden}
+  .email input{border:0;box-shadow:none;border-radius:0;flex:1;min-width:0}
+  .email span{flex:none;padding:0 10px 0 2px;font-size:13px;color:var(--muted);white-space:nowrap}
+  .previewLabel{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+  .previewHint{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.45}
+  .block{margin-top:20px}
+  .seg{display:inline-flex;gap:4px;background:var(--soft);border-radius:8px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:12px;padding:7px 12px;border-radius:6px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(20,40,55,.15)}
+  .logoRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+  .logoRow .lbl{font-size:12px;font-weight:700;color:var(--label)}
+  .logoRow .note{font-size:12px;color:var(--muted)}
+  .callout{background:var(--soft);border-left:4px solid var(--accent);border-radius:6px;padding:11px 13px;font-size:13px;line-height:1.5;margin:0 0 10px}
+  /* The preview stays white on purpose: it shows the signature the way most email shows it. */
+  .preview{padding:18px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#26343d;overflow:auto;min-height:150px}
+  .preview.small{min-height:0}
+  .actions{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .copy{border:0;border-radius:7px;background:var(--accent);color:var(--accent-text);font-weight:700;font-size:14px;padding:11px 18px;cursor:pointer}
   .copy:disabled{opacity:.5;cursor:not-allowed}
-  .status{font-size:12px;color:#5e6b73}
+  .status{font-size:12px;color:var(--muted)}
+  .status.ok{color:var(--ok);font-weight:700}
   .error{font-size:13px;color:#9b2c2c;line-height:1.5}
-  @media(max-width:520px){.page{margin:18px auto;padding:0 12px}.card{padding:18px}.preview{padding:12px}.field{min-width:100%;width:100%}}
+  .notice{font-size:13px;color:var(--error);line-height:1.5;margin:0 0 14px}
+  .steps{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+  .steps h2{font-size:14px;margin:0 0 8px}
+  details{border:1px solid var(--line);border-radius:8px;margin-top:8px;background:var(--card)}
+  summary{cursor:pointer;font-size:13px;font-weight:700;padding:11px 12px}
+  details ol{margin:0;padding:0 14px 12px 32px;font-size:13px;line-height:1.6;color:var(--text)}
+  details p{margin:0;padding:0 14px 12px;font-size:12px;line-height:1.5;color:var(--muted)}
+  [hidden]{display:none !important}
+  @media(max-width:520px){.page{margin:18px auto;padding:0 12px}.card{padding:18px}.preview{padding:12px}.grid{grid-template-columns:1fr}.email span{font-size:12px}}
 </style>
 </head>
 <body>
 <div class="page">
   <div class="card">
-    <h1>Process Email Signature Generator</h1>
-    <p class="help">Select a staff member, review the signature, then click <strong>Copy Signature</strong> and paste it into Gmail → Settings → General → Signature.</p>
+    <div class="head">
+      <h1>Process Email Signature Generator</h1>
+      <button id="themeBtn" class="theme" type="button" onclick="toggleTheme()">Dark mode</button>
+    </div>
+    <p class="help">Find your name in the staff list, or make your own if you're not on it. You get two signatures: the full card for new emails and a short one for replies. Copy each one and paste it into your email settings (steps below).</p>
 
-    <div class="controls">
+    <div class="tabs" role="tablist">
+      <button id="tabList" class="tab" type="button" role="tab" aria-selected="true" onclick="setMode('list')">Staff list</button>
+      <button id="tabCustom" class="tab" type="button" role="tab" aria-selected="false" onclick="setMode('custom')">Not on the list? Make your own</button>
+    </div>
+
+    <div id="listPane" class="controls">
+      <p id="listNotice" class="notice" hidden></p>
       <div class="field">
         <label for="staffSelect">Staff member</label>
         <select id="staffSelect" disabled><option>Loading staff…</option></select>
       </div>
     </div>
 
+    <div id="customPane" class="controls" hidden>
+      <div class="grid">
+        <div class="field">
+          <label for="fName">Full name</label>
+          <input id="fName" type="text" autocomplete="name" maxlength="60" placeholder="Jane Smith">
+        </div>
+        <div class="field">
+          <label for="fCred">Credentials <span class="opt">(optional)</span></label>
+          <input id="fCred" type="text" maxlength="60" placeholder="CRSW, LADC">
+        </div>
+        <div class="field wide">
+          <label for="fTitle">Job title</label>
+          <input id="fTitle" type="text" autocomplete="organization-title" maxlength="70" placeholder="Recovery Support Worker">
+        </div>
+        <div class="field">
+          <label for="fPhone">Work phone</label>
+          <input id="fPhone" type="tel" inputmode="tel" maxlength="24" placeholder="603-555-0123">
+        </div>
+        <div class="field">
+          <label for="fCell">Cell <span class="opt">(optional)</span></label>
+          <input id="fCell" type="tel" inputmode="tel" maxlength="24" placeholder="603-555-0123">
+        </div>
+        <div class="field">
+          <label for="fEmail">Work email</label>
+          <div class="email">
+            <input id="fEmail" type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" maxlength="40" placeholder="janes">
+            <span>@theprocessrecoverycenter.com</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fPronouns">Pronouns <span class="opt">(optional)</span></label>
+          <input id="fPronouns" type="text" maxlength="24" placeholder="she/her">
+        </div>
+      </div>
+    </div>
+
+    <div class="previewLabel">1. Full signature</div>
+    <p class="previewHint">For new emails.</p>
+    <div class="logoRow">
+      <span class="lbl">Logo</span>
+      <span class="seg">
+        <button id="logoStill" type="button" aria-pressed="true" onclick="setSpin(false)">Still</button>
+        <button id="logoSpin" type="button" aria-pressed="false" onclick="setSpin(true)">Spinning</button>
+      </span>
+      <span id="spinNote" class="note" hidden>The arrows turn slowly. Some older Outlook versions show it still.</span>
+    </div>
     <div class="preview">
       <div id="signature"></div>
       <div id="error" class="error" hidden></div>
     </div>
-
     <div class="actions">
-      <button id="copyBtn" class="copy" onclick="copySignature()" disabled>Copy Signature</button>
+      <button id="copyBtn" class="copy" type="button" onclick="copySignature('signature','status')" disabled>Copy full signature</button>
       <span id="status" class="status"></span>
+    </div>
+
+    <div class="block">
+      <div class="previewLabel">2. Reply signature</div>
+      <p class="previewHint">For replies and forwards, so the full card only shows on the first email.</p>
+      <div class="preview small">
+        <div id="replySignature"></div>
+      </div>
+      <div class="actions">
+        <button id="copyReplyBtn" class="copy" type="button" onclick="copySignature('replySignature','statusReply')" disabled>Copy reply signature</button>
+        <span id="statusReply" class="status"></span>
+      </div>
+    </div>
+
+    <div class="steps">
+      <h2>How to set it up</h2>
+      <div class="callout"><strong>Set up both.</strong> The full signature goes on new emails only. Replies and forwards get the short one. That keeps long threads from filling up with logos.</div>
+      <details open>
+        <summary>Gmail</summary>
+        <ol>
+          <li>Open Gmail on a computer. Click the gear, then <strong>See all settings</strong>.</li>
+          <li>On the <strong>General</strong> tab, scroll to <strong>Signature</strong>.</li>
+          <li>Click <strong>Create new</strong> and name it <strong>Full</strong>. Come back here, click <strong>Copy full signature</strong>, then paste it in the box (Ctrl+V, or Cmd+V on a Mac).</li>
+          <li>Click <strong>Create new</strong> again and name it <strong>Reply</strong>. Come back here, click <strong>Copy reply signature</strong>, then paste it in the box.</li>
+          <li><strong>Under Signature defaults, set "For new emails use" to Full and "On reply/forward use" to Reply.</strong></li>
+          <li>Scroll to the bottom and click <strong>Save Changes</strong>.</li>
+        </ol>
+        <p>Need the full card on a reply now and then? In the email you're writing, click the pen icon at the bottom and pick <strong>Full</strong>.</p>
+      </details>
+      <details>
+        <summary>Outlook (new Outlook or Outlook on the web)</summary>
+        <ol>
+          <li>Click the gear for <strong>Settings</strong>, then <strong>Accounts</strong> → <strong>Signatures</strong>.</li>
+          <li>Click <strong>New signature</strong> and name it <strong>Full</strong>. Paste the full signature (Ctrl+V, or Cmd+V on a Mac) and save.</li>
+          <li>Click <strong>New signature</strong> again and name it <strong>Reply</strong>. Paste the reply signature and save.</li>
+          <li><strong>Under "Select default signatures", set "For New Messages" to Full and "For Replies/Forwards" to Reply.</strong></li>
+          <li>Click <strong>Save</strong>.</li>
+        </ol>
+        <p>If the logos or text come out bigger than the preview above, delete it, paste again, and choose <strong>Keep source formatting</strong> if Outlook asks. Don't drag the logos to resize them.</p>
+      </details>
+      <details>
+        <summary>Outlook (classic desktop app)</summary>
+        <ol>
+          <li>Go to <strong>File</strong> → <strong>Options</strong> → <strong>Mail</strong> → <strong>Signatures</strong>.</li>
+          <li>Click <strong>New</strong>, name it <strong>Full</strong>, and paste the full signature (Ctrl+V). If a paste button appears, choose <strong>Keep source formatting</strong>.</li>
+          <li>Click <strong>New</strong> again, name it <strong>Reply</strong>, and paste the reply signature.</li>
+          <li><strong>On the right, set "New messages" to Full and "Replies/forwards" to Reply.</strong></li>
+          <li>Click <strong>OK</strong>.</li>
+        </ol>
+      </details>
     </div>
   </div>
 </div>
@@ -54,10 +204,19 @@
 const DATA_URL = 'https://process603.github.io/process-card-assets/data.json';
 const PROCESS_LOGO = 'https://raw.githubusercontent.com/process603/process-email-signatures/main/process-logo.png';
 const KING_LOGO = 'https://raw.githubusercontent.com/process603/process-email-signatures/main/king-logo.png';
+const PROCESS_LOGO_SPIN = 'https://raw.githubusercontent.com/process603/process-email-signatures/main/process-logo-spin.gif';
 const FAX_DISPLAY = '603-386-6404';
+const EMAIL_DOMAIN = 'theprocessrecoverycenter.com';
+const CUSTOM_ADDRESS = '21 Factory Street, Nashua NH 03060';
+const ARIAL = 'font-family:Arial,Helvetica,sans-serif;';
 
 let staffData = [];
 let settings = {};
+let mode = 'list';
+let listPerson = null;
+let listFailed = false;
+let spinLogo = false;
+let currentPerson = null;
 
 function esc(value){
   return String(value ?? '')
@@ -76,6 +235,15 @@ function telHref(phone){
   return 'tel:+'+digits;
 }
 
+/* 6035550123 -> 603-555-0123. Anything that isn't a plain US number is left as typed. */
+function formatPhone(phone){
+  const raw=String(phone||'').trim();
+  let digits=raw.replace(/\D/g,'');
+  if(digits.length===11 && digits.startsWith('1')) digits=digits.slice(1);
+  if(digits.length===10 && !/[a-z]/i.test(raw)) return digits.slice(0,3)+'-'+digits.slice(3,6)+'-'+digits.slice(6);
+  return raw;
+}
+
 function mapsHref(address){
   const a=String(address||'').trim();
   return a ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a) : '#';
@@ -84,45 +252,96 @@ function mapsHref(address){
 function signatureHtml(person){
   const credentials = String(person.credentials || '').trim();
   const credentialHtml = credentials ? `, <span style="font-size:11px;">${esc(credentials)}</span>` : '';
+  const pronouns = String(person.pronouns || '').trim();
+  const pronounHtml = pronouns ? ` <span style="font-weight:normal;color:#69767e;">&middot; ${esc(pronouns)}</span>` : '';
   const website = settings.main_website || 'https://www.theprocessrecoverycenter.com/';
   const websiteDisplay = website.replace(/^https?:\/\//,'').replace(/\/$/,'');
   const location = person.location || settings.main_address || '21 Factory St, Nashua, NH 03060';
   const phoneHref = person.phoneHref || telHref(person.phone);
   const mapLink = mapsHref(location);
+  const cell = String(person.cell || '').trim();
+
+  const labelTd = letter => `<td style="${ARIAL}font-size:11px;line-height:15px;font-weight:bold;color:#39779f;padding-right:4px;">${letter}</td>`;
+  const phoneTd = `<td style="${ARIAL}font-size:11px;line-height:15px;padding-right:9px;"><a href="${esc(phoneHref)}" style="color:#26343d;text-decoration:none;">${esc(person.phone || '')}</a></td>`;
+  const faxTd = `<td style="${ARIAL}font-size:11px;line-height:15px;color:#26343d;">${FAX_DISPLAY}</td>`;
+  const cellTd = `<td style="${ARIAL}font-size:11px;line-height:15px;"><a href="${esc(telHref(cell))}" style="color:#26343d;text-decoration:none;">${esc(cell)}</a></td>`;
+  // With a cell number the row is Phone + Cell and fax drops to its own line, so nothing wraps.
+  const phoneRow = cell ? labelTd('P')+phoneTd+labelTd('C')+cellTd : labelTd('P')+phoneTd+labelTd('F')+faxTd;
+  const faxLine = cell ? `
+<div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">F</span>&nbsp; ${FAX_DISPLAY}</div>` : '';
 
   return `
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:410px;max-width:410px;font-family:Arial,Helvetica,sans-serif;color:#26343d;">
 <tr>
 <td width="112" valign="middle" style="width:112px;padding:3px 9px 3px 0;text-align:center;border-right:1px solid #75a6c4;">
-<a href="${esc(website)}" style="text-decoration:none;"><img src="${PROCESS_LOGO}" width="108" alt="The Process Recovery Center" style="display:block;width:108px;height:auto;border:0;margin:0 auto;"></a>
+<a href="${esc(website)}" style="text-decoration:none;"><img src="${spinLogo ? PROCESS_LOGO_SPIN : PROCESS_LOGO}" width="108" height="72" alt="The Process Recovery Center" style="display:block;width:108px;height:auto;border:0;margin:0 auto;"></a>
 </td>
 <td valign="top" style="padding:1px 0 1px 11px;">
 <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:19px;font-weight:bold;font-style:italic;color:#1f2930;white-space:nowrap;">${esc(person.name)}${credentialHtml}</div>
-<div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:15px;font-weight:600;color:#39779f;margin-top:1px;">${esc(person.title || '')}</div>
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:15px;font-weight:600;color:#39779f;margin-top:1px;">${esc(person.title || '')}${pronounHtml}</div>
 <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:13px;font-weight:bold;color:#59666e;letter-spacing:.4px;margin-top:1px;">THE PROCESS RECOVERY CENTER</div>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:5px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;"><tr>
-<td style="font-size:11px;line-height:15px;font-weight:bold;color:#39779f;padding-right:4px;">P</td>
-<td style="font-size:11px;line-height:15px;padding-right:9px;"><a href="${esc(phoneHref)}" style="color:#26343d;text-decoration:none;">${esc(person.phone || '')}</a></td>
-<td style="font-size:11px;line-height:15px;font-weight:bold;color:#39779f;padding-right:4px;">F</td>
-<td style="font-size:11px;line-height:15px;color:#26343d;">${FAX_DISPLAY}</td>
-</tr></table>
-<div style="font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">E</span>&nbsp; <a href="mailto:${esc(person.email || '')}" style="color:#26343d;text-decoration:none;">${esc(person.email || '')}</a></div>
-<div style="font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">W</span>&nbsp; <a href="${esc(website)}" style="color:#39779f;text-decoration:none;">${esc(websiteDisplay)}</a></div>
-<div style="font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">A</span>&nbsp; <a href="${esc(mapLink)}" style="color:#26343d;text-decoration:none;">${esc(location)}</a></div>
+${phoneRow}
+</tr></table>${faxLine}
+<div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">E</span>&nbsp; <a href="mailto:${esc(person.email || '')}" style="color:#26343d;text-decoration:none;">${esc(person.email || '')}</a></div>
+<div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">W</span>&nbsp; <a href="${esc(website)}" style="color:#39779f;text-decoration:none;">${esc(websiteDisplay)}</a></div>
+<div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><span style="font-weight:bold;color:#39779f;">A</span>&nbsp; <a href="${esc(mapLink)}" style="color:#26343d;text-decoration:none;">${esc(location)}</a></div>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:5px;border-top:1px solid #cddce5;width:auto;"><tr>
 <td style="padding-top:5px;font-family:Georgia,'Times New Roman',serif;font-size:9px;font-style:italic;line-height:12px;color:#69767e;vertical-align:middle;white-space:nowrap;">A proud affiliate of</td>
-<td style="padding-top:4px;padding-left:2px;vertical-align:middle;"><img src="${KING_LOGO}" width="88" alt="King Healthcare Group" style="display:block;width:88px;height:auto;border:0;"></td>
+<td style="padding-top:4px;padding-left:2px;vertical-align:middle;"><img src="${KING_LOGO}" width="88" height="59" alt="King Healthcare Group" style="display:block;width:88px;height:auto;border:0;"></td>
 </tr></table>
 </td>
 </tr>
 </table>`;
 }
 
+/* Short signature for replies and forwards: name, title, phone. */
+function replyHtml(person){
+  const credentials = String(person.credentials || '').trim();
+  const credentialHtml = credentials ? `, <span style="font-size:11px;">${esc(credentials)}</span>` : '';
+  const phoneHref = person.phoneHref || telHref(person.phone);
+  const title = String(person.title || '').trim();
+  const phone = String(person.phone || '').trim();
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#26343d;">
+<tr><td style="padding:0;">
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:18px;font-weight:bold;font-style:italic;color:#1f2930;white-space:nowrap;">${esc(person.name)}${credentialHtml}</div>${title ? `
+<div style="${ARIAL}font-size:12px;line-height:15px;font-weight:600;color:#39779f;margin-top:1px;">${esc(title)}</div>` : ''}${phone ? `
+<div style="${ARIAL}font-size:11px;line-height:15px;margin-top:1px;"><a href="${esc(phoneHref)}" style="color:#26343d;text-decoration:none;">${esc(phone)}</a></div>` : ''}
+</td></tr>
+</table>`;
+}
+
+function setStatus(text, ok, id){
+  const status=document.getElementById(id||'status');
+  status.textContent=text||'';
+  status.className='status'+(ok?' ok':'');
+}
+
+/* Draws both signatures. canCopy=false keeps the copy buttons off (details still missing). */
+function draw(person, canCopy){
+  currentPerson = person;
+  document.getElementById('signature').innerHTML = person ? signatureHtml(person) : '';
+  document.getElementById('replySignature').innerHTML = person ? replyHtml(person) : '';
+  document.getElementById('copyBtn').disabled = !canCopy;
+  document.getElementById('copyReplyBtn').disabled = !canCopy;
+  setStatus('', false, 'statusReply');
+}
+
 function render(person){
-  document.getElementById('signature').innerHTML = signatureHtml(person);
+  draw(person, true);
   document.getElementById('error').hidden = true;
-  document.getElementById('copyBtn').disabled = false;
-  document.getElementById('status').textContent = '';
+  setStatus('');
+}
+
+function setSpin(on){
+  spinLogo = !!on;
+  document.getElementById('logoSpin').setAttribute('aria-pressed', String(spinLogo));
+  document.getElementById('logoStill').setAttribute('aria-pressed', String(!spinLogo));
+  document.getElementById('spinNote').hidden = !spinLogo;
+  // Only the logo changes, so swap it in place and leave any "Copied" or "Still needed" message alone.
+  const img = document.querySelector('#signature img');
+  if(img) img.src = spinLogo ? PROCESS_LOGO_SPIN : PROCESS_LOGO;
 }
 
 function updateUrl(staffId){
@@ -131,9 +350,78 @@ function updateUrl(staffId){
   history.replaceState({}, '', url);
 }
 
+/* ---------- Make your own ---------- */
+
+const CUSTOM_FIELDS=['fName','fCred','fTitle','fPhone','fCell','fEmail','fPronouns'];
+function val(id){ return document.getElementById(id).value.replace(/\s+/g,' ').trim(); }
+
+function emailLocal(){
+  // People paste their whole address; keep only the part before the @.
+  return val('fEmail').toLowerCase().split('@')[0].replace(/[^a-z0-9._-]/g,'');
+}
+
+function customPerson(){
+  const local=emailLocal();
+  return {
+    name: val('fName'),
+    credentials: val('fCred').replace(/^,\s*/,''),
+    title: val('fTitle'),
+    phone: formatPhone(val('fPhone')),
+    cell: formatPhone(val('fCell')),
+    pronouns: val('fPronouns').replace(/^\(|\)$/g,''),
+    email: local ? local+'@'+EMAIL_DOMAIN : '',
+    location: CUSTOM_ADDRESS
+  };
+}
+
+function customMissing(p){
+  const missing=[];
+  if(!p.name) missing.push('full name');
+  if(!p.title) missing.push('job title');
+  if(p.phone.replace(/\D/g,'').length<10) missing.push('work phone');
+  if(!p.email) missing.push('work email');
+  if(p.cell && p.cell.replace(/\D/g,'').length<10) missing.push('a full cell number (or leave it blank)');
+  return missing;
+}
+
+function renderCustom(){
+  const p=customPerson();
+  const missing=customMissing(p);
+  const untouched=!p.name && !p.title && !val('fPhone') && !p.email;
+  // Show placeholders in the preview so people can see the layout before they finish typing.
+  const shown=Object.assign({},p,{
+    name: p.name || 'Your Name',
+    title: p.title || 'Your job title',
+    phone: p.phone || '603-555-0123',
+    email: p.email || 'you@'+EMAIL_DOMAIN
+  });
+  draw(shown, missing.length===0);
+  document.getElementById('error').hidden=true;
+  setStatus(missing.length ? (untouched ? 'Fill in your details to copy.' : 'Still needed: '+missing.join(', ')+'.') : '');
+}
+
+function setMode(next){
+  mode=next;
+  const custom=mode==='custom';
+  document.getElementById('listPane').hidden=custom;
+  document.getElementById('customPane').hidden=!custom;
+  document.getElementById('tabList').setAttribute('aria-selected',String(!custom));
+  document.getElementById('tabCustom').setAttribute('aria-selected',String(custom));
+  if(custom){ renderCustom(); return; }
+  if(listPerson){ render(listPerson); return; }
+  draw(null, false);
+  setStatus('');
+  if(listFailed){
+    const error=document.getElementById('error');
+    error.textContent='The staff list could not be loaded from the shared Business Card Data feed. Please refresh and try again, or use "Make your own".';
+    error.hidden=false;
+  }
+}
+
+/* ---------- Staff list ---------- */
+
 async function loadStaff(){
   const select=document.getElementById('staffSelect');
-  const error=document.getElementById('error');
   try{
     const response=await fetch(DATA_URL,{cache:'no-store'});
     if(!response.ok) throw new Error('Could not load staff data.');
@@ -156,37 +444,56 @@ async function loadStaff(){
 
     select.value=defaultPerson.id;
     select.disabled=false;
-    render(defaultPerson);
+    listPerson=defaultPerson;
+    if(mode==='list') render(defaultPerson); else renderCustom();
     if(requestedPerson) updateUrl(defaultPerson.id);
 
     select.addEventListener('change',()=>{
       const person=staffData.find(p=>p.id===select.value);
-      if(person){render(person);updateUrl(person.id);}
+      if(person){listPerson=person;render(person);updateUrl(person.id);}
     });
   }catch(err){
+    listFailed=true;
     select.innerHTML='<option>Unable to load staff</option>';
-    error.textContent='The staff list could not be loaded from the shared Business Card Data feed. Please refresh and try again.';
-    error.hidden=false;
+    if(mode==='list') setMode('list');
   }
 }
 
-async function copySignature(){
-  const sig=document.getElementById('signature');
-  const status=document.getElementById('status');
+async function copySignature(sourceId, statusId){
+  const sig=document.getElementById(sourceId||'signature');
   if(!sig.innerHTML.trim()) return;
   try{
     const blob=new Blob([sig.innerHTML],{type:'text/html'});
     const text=new Blob([sig.innerText],{type:'text/plain'});
     await navigator.clipboard.write([new ClipboardItem({'text/html':blob,'text/plain':text})]);
-    status.textContent='Copied — paste into Gmail.';
   }catch(e){
     const r=document.createRange();r.selectNodeContents(sig);
     const s=window.getSelection();s.removeAllRanges();s.addRange(r);
     document.execCommand('copy');s.removeAllRanges();
-    status.textContent='Copied — paste into Gmail.';
   }
+  setStatus('', false, 'status'); setStatus('', false, 'statusReply');
+  setStatus(sourceId==='replySignature' ? 'Copied. Paste it in as your Reply signature.' : 'Copied. Paste it in as your Full signature.', true, statusId||'status');
 }
 
+/* ---------- Light / dark ---------- */
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('themeBtn').textContent = theme==='dark' ? 'Light mode' : 'Dark mode';
+}
+function toggleTheme(){
+  const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  applyTheme(next);
+  try{ localStorage.setItem('sigTheme',next); }catch(e){}
+}
+(function(){
+  let saved=null;
+  try{ saved=localStorage.getItem('sigTheme'); }catch(e){}
+  const system=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(saved==='dark'||saved==='light' ? saved : system);
+})();
+
+CUSTOM_FIELDS.forEach(id=>document.getElementById(id).addEventListener('input',renderCustom));
 loadStaff();
 </script>
 </body>
